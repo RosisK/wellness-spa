@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { MapPin, MessageCircle, Phone } from "lucide-react";
+import { telephoneHref, whatsappHref } from "../lib/site-content";
 
-export default function SiteFooter() {
+export default function SiteFooter({ content }) {
+  const location = content.locations[0];
+
   return (
     <footer className="footer">
       <div className="footer-main">
@@ -16,15 +19,17 @@ export default function SiteFooter() {
           <p className="eyebrow">Find us</p>
           <p className="footer-detail">
             <MapPin size={16} />
-            <span>Lakeside 6, Pokhara<br />Gandaki, Nepal</span>
+            <a href={location.mapUrl} target="_blank" rel="noreferrer">
+              {location.address}, {location.city}<br />{location.region}, {location.country}
+            </a>
           </p>
         </div>
         <div>
           <p className="eyebrow">Contact</p>
-          <a className="footer-detail" href="tel:+9779846021840">
-            <Phone size={16} /> +977 984 602 1840
+          <a className="footer-detail" href={telephoneHref(content.phone)}>
+            <Phone size={16} /> {content.phone}
           </a>
-          <a className="footer-detail" href="https://wa.me/9779846021840" target="_blank" rel="noreferrer">
+          <a className="footer-detail" href={whatsappHref(content.whatsapp)} target="_blank" rel="noreferrer">
             <MessageCircle size={16} /> WhatsApp us
           </a>
         </div>
@@ -37,7 +42,7 @@ export default function SiteFooter() {
       </div>
       <div className="footer-bottom">
         <span>© {new Date().getFullYear()} Waves Spa · Pokhara, Nepal</span>
-        <span>Open daily · 9:00–20:00</span>
+          <Link className="footer-detail admin-link" href="/admin">Admin</Link>
       </div>
     </footer>
   );

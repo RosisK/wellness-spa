@@ -1,8 +1,13 @@
 import Link from "next/link";
 import { ArrowUpRight, Clock3, MapPin } from "lucide-react";
-import { treatments } from "../lib/treatments";
+import { getSiteContent } from "../lib/site-content";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const content = await getSiteContent();
+  const location = content.locations[0];
+  const featuredTreatments = content.treatments.filter((item) => item.featured);
+  const homeTreatments = (featuredTreatments.length ? featuredTreatments : content.treatments).slice(0, 3);
+
   return (
     <>
       <section className="hero">
@@ -16,8 +21,8 @@ export default function HomePage() {
             View treatments <ArrowUpRight size={16} />
           </Link>
           <div className="hero-note">
-            <span>Open daily, 9:00–20:00</span>
-            <span>Lakeside 6, Pokhara</span>
+            <span>{content.hours}</span>
+            <span>{location.address}, {location.city}</span>
           </div>
         </div>
         <div className="hero-image">
@@ -53,7 +58,7 @@ export default function HomePage() {
           </Link>
         </div>
         <div className="treatment-list">
-          {treatments.slice(0, 3).map((item, index) => (
+          {homeTreatments.map((item, index) => (
             <article className="treatment-row" key={item.id}>
               <span className="row-number">0{index + 1}</span>
               <div>
@@ -82,7 +87,7 @@ export default function HomePage() {
           <p className="eyebrow light">Visit Waves Spa</p>
           <h2>In Lakeside,<br /><em>Pokhara.</em></h2>
           <p>
-            Find us at Lakeside 6. We’re open every day from 9:00 am to 8:00 pm.
+            Find us at {location.address}, {location.city}. {content.hours}.
           </p>
           <Link className="button button-light" href="/visit">
             Hours and directions <ArrowUpRight size={16} />
@@ -93,11 +98,13 @@ export default function HomePage() {
       <section className="visit-strip">
         <div>
           <p className="eyebrow">Address</p>
-          <p className="visit-title">Lakeside 6, Pokhara</p>
+          <a className="visit-title" href={location.mapUrl} target="_blank" rel="noreferrer">
+            {location.address}, {location.city}
+          </a>
         </div>
         <div className="visit-meta">
-          <span><Clock3 size={16} /> Daily · 9:00–20:00</span>
-          <span><MapPin size={16} /> Gandaki, Nepal</span>
+          <span><Clock3 size={16} /> {content.hours}</span>
+          <span><MapPin size={16} /> {location.region}, {location.country}</span>
         </div>
         <Link className="text-link" href="/book">
           Request an appointment <ArrowUpRight size={16} />

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Menu, Waves, X } from "lucide-react";
+import { telephoneHref } from "../lib/site-content";
 
 const links = [
   ["Home", "/"],
@@ -11,15 +12,16 @@ const links = [
   ["Visit", "/visit"],
 ];
 
-export default function SiteHeader() {
+export default function SiteHeader({ content }) {
   const [open, setOpen] = useState(false);
+  const location = content.locations[0];
 
   return (
     <>
       <div className="topline">
-        <span>Lakeside 6 · Pokhara</span>
-        <span>Open daily, 9:00–20:00</span>
-        <a href="tel:+9779846021840">+977 984 602 1840</a>
+        <span>{location.address} · {location.city}</span>
+        <span>{content.hours}</span>
+        <a href={telephoneHref(content.phone)}>{content.phone}</a>
       </div>
       <header className="site-header">
         <Link href="/" className="brand" aria-label="Waves Spa home">

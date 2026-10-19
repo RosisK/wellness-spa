@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { treatments } from "../../lib/treatments";
+import { getSiteContent } from "../../lib/site-content";
 export const metadata = { title: "Treatments & prices" };
-export default function TreatmentsPage() {
+export default async function TreatmentsPage() {
+  const { treatments } = await getSiteContent();
   return (
     <div className="page-wrap">
       <section className="page-hero">

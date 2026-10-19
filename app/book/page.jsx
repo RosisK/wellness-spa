@@ -1,7 +1,9 @@
 import { Suspense } from "react";
 import BookingForm from "../../components/booking-form";
+import { getSiteContent, telephoneHref } from "../../lib/site-content";
 export const metadata = { title: "Request an appointment" };
-export default function BookPage() {
+export default async function BookPage() {
+  const content = await getSiteContent();
   return (
     <div className="page-wrap booking-page">
       <section className="page-hero">
@@ -14,10 +16,10 @@ export default function BookPage() {
           <p className="eyebrow">Please note</p>
           <p>Submitting a request does not reserve a time. Your appointment is confirmed after we reply.</p>
           <p className="eyebrow">Questions?</p>
-          <a href="tel:+9779846021840">Call +977 984 602 1840</a>
+          <a href={telephoneHref(content.phone)}>Call {content.phone}</a>
         </div>
         <Suspense fallback={<p>Loading booking form…</p>}>
-          <BookingForm />
+          <BookingForm content={content} />
         </Suspense>
       </section>
     </div>
