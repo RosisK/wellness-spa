@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { defaultSiteContent } from "../lib/site-content";
 
 const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const anonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const projectRoot = projectUrl?.replace(/\/$/, "");
 const apiBase = projectRoot ? `${projectRoot}/rest/v1` : "";
 
@@ -15,11 +17,12 @@ async function readContent(token) {
   });
   if (!response.ok) throw new Error("Could not load site content. Check the database setup.");
   const [row] = await response.json();
-  if (!row?.content) throw new Error("The site content row is missing. Run the setup SQL in the project README.");
+  if (!row?.content) throw new Error("The site content record is missing. Check that the database migration has been applied.");
   return { ...defaultSiteContent, ...row.content };
 }
 
 export default function AdminEditor() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [token, setToken] = useState("");
@@ -32,7 +35,7 @@ export default function AdminEditor() {
     return (
       <div className="admin-message">
         <h2>Database setup required</h2>
-        <p>Add <code>NEXT_PUBLIC_SUPABASE_URL</code> and <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> to your local environment and hosting settings, then run the SQL migration described in the README.</p>
+        <p>Add <code>NEXT_PUBLIC_SUPABASE_URL</code> and a publishable or anon key to your local environment and hosting settings, then run the SQL migration described in the README.</p>
       </div>
     );
   }
@@ -115,8 +118,9 @@ export default function AdminEditor() {
         throw new Error(result.message || "Save failed. Check the database policies and try again.");
       }
       const updatedRows = await response.json();
-      if (!updatedRows.length) throw new Error("No content row was updated. Reapply the Supabase setup SQL.");
+      if (!updatedRows.length) throw new Error("No content record was updated. Check that the initial site content record exists.");
       setNotice("Changes saved. They’re now visible on the public site.");
+      router.refresh();
     } catch (issue) {
       setError(issue.message || "Could not save changes.");
     } finally {

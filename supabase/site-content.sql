@@ -1,5 +1,4 @@
--- Waves Spa public site content and admin write access.
--- Apply this in the Supabase SQL Editor before configuring the admin page.
+-- Public content for the Waves Spa website. Visitors can read it; admins can update it.
 
 create table if not exists public.site_content (
   id integer primary key check (id = 1),
@@ -50,8 +49,3 @@ values (
   }'::jsonb
 )
 on conflict (id) do nothing;
-
--- After creating the administrator in Supabase Auth, set that account's role:
--- update auth.users
--- set raw_app_meta_data = coalesce(raw_app_meta_data, '{}'::jsonb) || '{"role":"admin"}'::jsonb
--- where email = 'admin@example.com';
