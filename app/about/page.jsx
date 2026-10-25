@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { ArrowUpRight, Heart, Leaf, Sparkles } from "lucide-react";
+import { getSiteContent } from "../../lib/site-content";
 export const metadata = { title: "About Waves Spa" };
-export default function AboutPage() {
+export default async function AboutPage() {
+  const content = await getSiteContent();
   const services = [
     [Heart, "Personal consultations", "We ask about your preferences before each treatment."],
     [Leaf, "Massage and body care", "Choose a treatment from the menu and let us know about any sensitivities."],
@@ -17,7 +19,7 @@ export default function AboutPage() {
       </section>
       <section className="about-grid">
         <div className="about-image">
-          <img src="/pokhara-spa-retreat.png" alt="Plants in the Waves Spa courtyard" />
+          {content.images?.about?.url && <img src={content.images.about.url} alt="Plants in the Waves Spa courtyard" />}
         </div>
         <div className="about-copy">
           <p className="eyebrow">What to expect</p>

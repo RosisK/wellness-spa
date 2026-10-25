@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { defaultSiteContent } from "../lib/site-content";
+import AdminImageField from "./admin-image-field";
 
 const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
@@ -18,7 +19,24 @@ async function readContent(token) {
   if (!response.ok) throw new Error("Could not load site content. Check the database setup.");
   const [row] = await response.json();
   if (!row?.content) throw new Error("The site content record is missing. Check that the database migration has been applied.");
-  return { ...defaultSiteContent, ...row.content };
+  return {
+    ...defaultSiteContent,
+    ...row.content,
+    images: { ...defaultSiteContent.images, ...(row.content.images || {}) },
+  };
+}
+
+async function removeStorageObjects(token, paths) {
+  const response = await fetch(`${projectRoot}/storage/v1/object/waves-spa-images`, {
+    method: "DELETE",
+    headers: {
+      apikey: anonKey,
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ prefixes: paths }),
+  });
+  if (!response.ok) throw new Error("The site was saved, but some replaced images could not be removed from storage.");
 }
 
 export default function AdminEditor() {
@@ -30,6 +48,8 @@ export default function AdminEditor() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const [uploadsInProgress, setUploadsInProgress] = useState(0);
+  const [pendingDeletes, setPendingDeletes] = useState([]);
 
   if (!projectUrl || !anonKey) {
     return (
@@ -70,6 +90,44 @@ export default function AdminEditor() {
 
   function updateSetting(field, value) {
     setContent((current) => ({ ...current, [field]: value }));
+  }
+
+  function changeImage(field, image) {
+    const previousImage = content.images?.[field];
+    if (previousImage?.path && previousImage.path !== image?.path) {
+      setPendingDeletes((paths) => [...new Set([...paths, previousImage.path])]);
+    }
+    setContent((current) => ({
+      ...current,
+      images: { ...current.images, [field]: image },
+    }));
+  }
+
+  async function uploadImage(field, file) {
+    const extension = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }[file.type];
+    if (!extension) throw new Error("Choose a JPG, PNG, or WebP image.");
+    const path = `${field}/${crypto.randomUUID()}.${extension}`;
+    setUploadsInProgress((count) => count + 1);
+    try {
+      const response = await fetch(`${projectRoot}/storage/v1/object/waves-spa-images/${path}`, {
+        method: "POST",
+        headers: {
+          apikey: anonKey,
+          Authorization: `Bearer ${token}`,
+          "Content-Type": file.type,
+          "Cache-Control": "3600",
+        },
+        body: file,
+      });
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result.message || result.error || "The image could not be uploaded.");
+      }
+      const url = `${projectRoot}/storage/v1/object/public/waves-spa-images/${path}`;
+      changeImage(field, { url, path });
+    } finally {
+      setUploadsInProgress((count) => count - 1);
+    }
   }
 
   function updateItem(collection, index, field, value) {
@@ -119,7 +177,16 @@ export default function AdminEditor() {
       }
       const updatedRows = await response.json();
       if (!updatedRows.length) throw new Error("No content record was updated. Check that the initial site content record exists.");
-      setNotice("Changes saved. They’re now visible on the public site.");
+      let cleanupMessage = "";
+      if (pendingDeletes.length) {
+        try {
+          await removeStorageObjects(token, pendingDeletes);
+          setPendingDeletes([]);
+        } catch {
+          cleanupMessage = " Some replaced images could not be removed from storage.";
+        }
+      }
+      setNotice(`Changes saved. They’re now visible on the public site.${cleanupMessage}`);
       router.refresh();
     } catch (issue) {
       setError(issue.message || "Could not save changes.");
@@ -142,6 +209,21 @@ export default function AdminEditor() {
 
   return (
     <form className="admin-editor" onSubmit={save}>
+      <section className="admin-section">
+        <div className="admin-section-heading"><div><p className="eyebrow">Images</p><h2>Photos on the website</h2></div></div>
+        <div className="admin-image-grid">
+          {[["hero", "Home page"], ["story", "Home page visit section"], ["about", "About page"]].map(([field, label]) => (
+            <AdminImageField
+              key={field}
+              label={label}
+              image={content.images?.[field]}
+              onUpload={(file) => uploadImage(field, file)}
+              onRemove={() => changeImage(field, null)}
+            />
+          ))}
+        </div>
+      </section>
+
       <section className="admin-section">
         <div className="admin-section-heading"><div><p className="eyebrow">Contact</p><h2>Phone and hours</h2></div></div>
         <div className="admin-fields">
@@ -193,7 +275,7 @@ export default function AdminEditor() {
       {error && <p className="admin-error" role="alert">{error}</p>}
       {notice && <p className="admin-notice" role="status">{notice}</p>}
       <div className="admin-save-bar">
-        <button className="button button-dark" disabled={busy}>{busy ? "Saving…" : "Save changes"}</button>
+        <button className="button button-dark" disabled={busy || uploadsInProgress > 0}>{uploadsInProgress ? "Uploading…" : busy ? "Saving…" : "Save changes"}</button>
         <button type="button" className="text-link" onClick={() => { setContent(null); setToken(""); setNotice(""); }}>Sign out</button>
       </div>
     </form>

@@ -26,7 +26,7 @@ export default async function HomePage() {
           </div>
         </div>
         <div className="hero-image">
-          <img src="/pokhara-spa-hero.png" alt="Treatment room at Waves Spa" />
+          {content.images?.hero?.url && <img src={content.images.hero.url} alt="Treatment room at Waves Spa" />}
           <span className="image-caption">Waves Spa · Pokhara</span>
         </div>
       </section>
@@ -81,7 +81,7 @@ export default async function HomePage() {
 
       <section className="split-story">
         <div className="story-image">
-          <img src="/pokhara-spa-retreat.png" alt="Plants in the spa courtyard" />
+          {content.images?.story?.url && <img src={content.images.story.url} alt="Plants in the spa courtyard" />}
         </div>
         <div className="story-copy">
           <p className="eyebrow light">Visit Waves Spa</p>

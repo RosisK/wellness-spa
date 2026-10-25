@@ -11,7 +11,7 @@ npm run dev
 
 ## Configure Supabase and the admin page
 
-The admin page at `/admin` saves contact details, hours, locations, and treatment listings to one Supabase row. The public pages read that same row, so edits appear for visitors too.
+The admin page at `/admin` saves contact details, hours, locations, treatment listings, and image references to one Supabase row. Image files are stored in a public Supabase Storage bucket; the public pages use their URLs.
 
 ### Supabase dashboard
 
@@ -25,7 +25,7 @@ The admin page at `/admin` saves contact details, hours, locations, and treatmen
 
    A legacy anon key can also be supplied as `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Do not use or expose the `service_role` or secret key in this website.
 
-3. In Supabase, open **SQL Editor → New query**. Paste and run [`supabase/site-content.sql`](supabase/site-content.sql). This creates the `site_content` table, enables row-level security on that table, creates public-read/admin-update policies, and inserts the initial Waves Spa content. RLS is enabled per table; an account-level setting alone does not configure these policies.
+3. In Supabase, open **SQL Editor → New query**. Paste and run [`supabase/site-content.sql`](supabase/site-content.sql). This creates the `site_content` table and public `waves-spa-images` bucket, enables row-level security, adds public read and admin write policies, and inserts the initial Waves Spa content. RLS is enabled per table; an account-level setting alone does not configure these policies.
 4. In **Authentication → Users**, add an admin user with email and password. Confirm the user if your Auth settings require email confirmation.
 5. In SQL Editor, assign the admin role to that exact account. Replace the email below and run it:
 
@@ -45,7 +45,7 @@ The admin page at `/admin` saves contact details, hours, locations, and treatmen
    npm run dev
    ```
 
-2. Open `/admin`, sign in with the admin user, change a phone number or treatment, and click **Save changes**.
+2. Open `/admin` and sign in with the admin user. Update contact details, locations, or treatments; add, replace, or remove photos; then click **Save changes**. Images can be JPG, PNG, or WebP up to 5 MB each.
 3. Open the public site and check the header, footer, booking form, and Treatments page. Saved content should appear there.
 
 If sign-in reports that the account lacks the admin role, rerun the role update using the exact account email and sign in again. If sign-in works but save is denied, check that the migration ran and that the update policy is present on `public.site_content`.
