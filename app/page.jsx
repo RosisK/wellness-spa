@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, Clock3, MapPin } from "lucide-react";
 import { getSiteContent } from "../lib/site-content";
+import ShapoReviews from "../components/shapo-reviews";
 
 export default async function HomePage() {
   const content = await getSiteContent();
@@ -78,6 +79,8 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
+
+      <ShapoReviews enabled={content.showReviews} />
 
       <section className="split-story">
         <div className="story-image">

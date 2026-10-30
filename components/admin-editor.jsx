@@ -210,6 +210,13 @@ export default function AdminEditor() {
   return (
     <form className="admin-editor" onSubmit={save}>
       <section className="admin-section">
+        <div className="admin-section-heading"><div><p className="eyebrow">Reviews</p><h2>Guest reviews</h2></div></div>
+        <div className="admin-fields">
+          <label className="admin-checkbox"><input type="checkbox" checked={content.showReviews !== false} onChange={(event) => updateSetting("showReviews", event.target.checked)} /> Show guest reviews on the home page</label>
+        </div>
+      </section>
+
+      <section className="admin-section">
         <div className="admin-section-heading"><div><p className="eyebrow">Images</p><h2>Photos on the website</h2></div></div>
         <div className="admin-image-grid">
           {[["hero", "Home page"], ["story", "Home page visit section"], ["about", "About page"]].map(([field, label]) => (
