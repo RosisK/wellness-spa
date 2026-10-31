@@ -9,7 +9,7 @@ export default async function BookPage() {
       <section className="page-hero">
         <p className="eyebrow">Appointments</p>
         <h1>Request a<br /><em>booking.</em></h1>
-        <p>Choose a treatment and preferred time. We’ll contact you on WhatsApp to confirm availability.</p>
+        <p>Send an appointment request and we’ll contact you to confirm availability. You can also follow up on WhatsApp.</p>
       </section>
       <section className="booking-layout">
         <div className="booking-aside">

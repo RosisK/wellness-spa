@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { defaultSiteContent } from "../lib/site-content";
 import AdminImageField from "./admin-image-field";
+import BookingInbox from "./booking-inbox";
 
 const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
@@ -50,6 +51,8 @@ export default function AdminEditor() {
   const [busy, setBusy] = useState(false);
   const [uploadsInProgress, setUploadsInProgress] = useState(0);
   const [pendingDeletes, setPendingDeletes] = useState([]);
+  const [activeView, setActiveView] = useState("content");
+  const [activeSection, setActiveSection] = useState("contact");
 
   if (!projectUrl || !anonKey) {
     return (
@@ -145,6 +148,13 @@ export default function AdminEditor() {
       ? { id, name: "New location", address: "", city: "", region: "", country: "Nepal", mapUrl: "" }
       : { id, name: "New treatment", category: "Massage", description: "", duration: "60 min", price: "", featured: false };
     setContent((current) => ({ ...current, [collection]: [...current[collection], item] }));
+    setError("");
+    setNotice(`New ${collection === "locations" ? "location" : "treatment"} added. Complete its details, then save your changes.`);
+    requestAnimationFrame(() => {
+      const card = document.querySelector(`[data-admin-item="${id}"]`);
+      card?.scrollIntoView({ behavior: "smooth", block: "center" });
+      card?.querySelector("input")?.focus({ preventScroll: true });
+    });
   }
 
   function removeItem(collection, index) {
@@ -156,6 +166,20 @@ export default function AdminEditor() {
 
   async function save(event) {
     event.preventDefault();
+    const invalidLocation = content.locations.some((location) =>
+      ["name", "address", "city", "region", "country", "mapUrl"].some((field) => !String(location[field] || "").trim()),
+    );
+    const invalidTreatment = content.treatments.some((treatment) =>
+      ["name", "category", "description", "duration", "price"].some((field) => !String(treatment[field] || "").trim()),
+    );
+    if (!content.phone?.trim() || !content.whatsapp?.trim() || !content.hours?.trim()
+      || invalidLocation || invalidTreatment) {
+      const section = invalidTreatment ? "treatments" : invalidLocation ? "locations" : "contact";
+      setActiveSection(section);
+      setError("Complete the required fields before saving.");
+      setNotice("");
+      return;
+    }
     setBusy(true);
     setError("");
     setNotice("");
@@ -208,15 +232,30 @@ export default function AdminEditor() {
   }
 
   return (
-    <form className="admin-editor" onSubmit={save}>
-      <section className="admin-section">
+    <div className="admin-workspace">
+      <nav className="admin-main-tabs" aria-label="Admin areas">
+        <button type="button" className={activeView === "content" ? "active" : ""} onClick={() => setActiveView("content")}>Website content</button>
+        <button type="button" className={activeView === "bookings" ? "active" : ""} onClick={() => setActiveView("bookings")}>Booking requests</button>
+        <button type="button" className="admin-sign-out" onClick={() => { setContent(null); setToken(""); setNotice(""); }}>Sign out</button>
+      </nav>
+
+      {activeView === "bookings"
+        ? <BookingInbox token={token} />
+        : <form className="admin-editor" onSubmit={save} noValidate>
+      <nav className="admin-subnav" aria-label="Website content sections">
+        {[["contact", "Contact"], ["treatments", "Treatments"], ["locations", "Locations"], ["images", "Images"], ["reviews", "Reviews"]].map(([section, label]) => (
+          <button type="button" key={section} className={activeSection === section ? "active" : ""} onClick={() => setActiveSection(section)}>{label}</button>
+        ))}
+      </nav>
+
+      <section className="admin-section" hidden={activeSection !== "reviews"}>
         <div className="admin-section-heading"><div><p className="eyebrow">Reviews</p><h2>Guest reviews</h2></div></div>
         <div className="admin-fields">
           <label className="admin-checkbox"><input type="checkbox" checked={content.showReviews !== false} onChange={(event) => updateSetting("showReviews", event.target.checked)} /> Show guest reviews on the home page</label>
         </div>
       </section>
 
-      <section className="admin-section">
+      <section className="admin-section" hidden={activeSection !== "images"}>
         <div className="admin-section-heading"><div><p className="eyebrow">Images</p><h2>Photos on the website</h2></div></div>
         <div className="admin-image-grid">
           {[["hero", "Home page"], ["story", "Home page visit section"], ["about", "About page"]].map(([field, label]) => (
@@ -231,7 +270,7 @@ export default function AdminEditor() {
         </div>
       </section>
 
-      <section className="admin-section">
+      <section className="admin-section" hidden={activeSection !== "contact"}>
         <div className="admin-section-heading"><div><p className="eyebrow">Contact</p><h2>Phone and hours</h2></div></div>
         <div className="admin-fields">
           <label>Phone<input value={content.phone} onChange={(event) => updateSetting("phone", event.target.value)} required /></label>
@@ -240,13 +279,13 @@ export default function AdminEditor() {
         </div>
       </section>
 
-      <section className="admin-section">
+      <section className="admin-section" hidden={activeSection !== "locations"}>
         <div className="admin-section-heading">
           <div><p className="eyebrow">Locations</p><h2>Addresses and map links</h2></div>
           <button type="button" className="text-link admin-add" onClick={() => addItem("locations")}>Add location +</button>
         </div>
         {content.locations.map((location, index) => (
-          <fieldset className="admin-card" key={location.id}>
+          <fieldset className="admin-card" key={location.id} data-admin-item={location.id}>
             <legend>Location {index + 1}</legend>
             <button type="button" className="admin-remove" onClick={() => removeItem("locations", index)} disabled={content.locations.length === 1}>Remove</button>
             <div className="admin-fields">
@@ -256,15 +295,16 @@ export default function AdminEditor() {
             </div>
           </fieldset>
         ))}
+        <button type="button" className="text-link admin-add" onClick={() => addItem("locations")}>Add another location +</button>
       </section>
 
-      <section className="admin-section">
+      <section className="admin-section" hidden={activeSection !== "treatments"}>
         <div className="admin-section-heading">
           <div><p className="eyebrow">Treatments</p><h2>Services and prices</h2></div>
           <button type="button" className="text-link admin-add" onClick={() => addItem("treatments")}>Add treatment +</button>
         </div>
         {content.treatments.map((treatment, index) => (
-          <fieldset className="admin-card" key={treatment.id}>
+          <fieldset className="admin-card" key={treatment.id} data-admin-item={treatment.id}>
             <legend>Treatment {index + 1}</legend>
             <button type="button" className="admin-remove" onClick={() => removeItem("treatments", index)} disabled={content.treatments.length === 1}>Remove</button>
             <div className="admin-fields">
@@ -277,14 +317,15 @@ export default function AdminEditor() {
             </div>
           </fieldset>
         ))}
+        <button type="button" className="text-link admin-add" onClick={() => addItem("treatments")}>Add another treatment +</button>
       </section>
 
       {error && <p className="admin-error" role="alert">{error}</p>}
       {notice && <p className="admin-notice" role="status">{notice}</p>}
       <div className="admin-save-bar">
         <button className="button button-dark" disabled={busy || uploadsInProgress > 0}>{uploadsInProgress ? "Uploading…" : busy ? "Saving…" : "Save changes"}</button>
-        <button type="button" className="text-link" onClick={() => { setContent(null); setToken(""); setNotice(""); }}>Sign out</button>
       </div>
-    </form>
+    </form>}
+    </div>
   );
 }

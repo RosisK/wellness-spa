@@ -8,7 +8,7 @@ export default function AdminPage() {
       <section className="page-hero">
         <p className="eyebrow">Waves Spa</p>
         <h1>Site admin.</h1>
-        <p>Update contact details, locations, and treatment listings.</p>
+        <p>Manage website details and handle appointment requests.</p>
       </section>
       <AdminEditor />
     </div>

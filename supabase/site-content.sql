@@ -23,6 +23,49 @@ create policy "Admins can update site content"
 grant select on public.site_content to anon, authenticated;
 grant update on public.site_content to authenticated;
 
+create table if not exists public.booking_requests (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  customer_name text not null,
+  customer_phone text not null,
+  treatment_id text not null,
+  treatment_name text not null,
+  location_id text not null,
+  location_name text not null,
+  preferred_date date not null,
+  preferred_time text not null,
+  guest_notes text not null default '',
+  status text not null default 'pending' check (status in ('pending', 'confirmed', 'declined', 'completed')),
+  admin_notes text not null default ''
+);
+
+create index if not exists booking_requests_created_at_idx
+  on public.booking_requests (created_at desc);
+
+alter table public.booking_requests enable row level security;
+
+drop policy if exists "Visitors can submit booking requests" on public.booking_requests;
+create policy "Visitors can submit booking requests"
+  on public.booking_requests for insert
+  to anon, authenticated
+  with check (status = 'pending' and admin_notes = '');
+
+drop policy if exists "Admins can view booking requests" on public.booking_requests;
+create policy "Admins can view booking requests"
+  on public.booking_requests for select
+  to authenticated
+  using ((select auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+
+drop policy if exists "Admins can update booking requests" on public.booking_requests;
+create policy "Admins can update booking requests"
+  on public.booking_requests for update
+  to authenticated
+  using ((select auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
+  with check ((select auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+
+grant insert on public.booking_requests to anon, authenticated;
+grant select, update on public.booking_requests to authenticated;
+
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
   'waves-spa-images',
