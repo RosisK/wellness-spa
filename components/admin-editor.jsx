@@ -60,6 +60,7 @@ export default function AdminEditor() {
   const [pendingDeletes, setPendingDeletes] = useState([]);
   const [activeView, setActiveView] = useState("content");
   const [activeSection, setActiveSection] = useState("contact");
+  const [treatmentSearch, setTreatmentSearch] = useState("");
 
   if (!projectUrl || !anonKey) {
     return (
@@ -184,10 +185,14 @@ export default function AdminEditor() {
       ? { id, name: "New location", address: "", city: "", region: "", country: "Nepal", mapUrl: "" }
       : { id, name: "New treatment", category: "Massage & Body Therapies", description: "", bestFor: "", options: [{ id: crypto.randomUUID(), label: "60 min", duration: "60 min", price: "" }], featured: false };
     setContent((current) => ({ ...current, [collection]: [...current[collection], item] }));
+    if (collection === "treatments") setTreatmentSearch("");
     setError("");
     setNotice(`New ${collection === "locations" ? "location" : "treatment"} added. Complete its details, then save your changes.`);
     requestAnimationFrame(() => {
       const card = document.querySelector(`[data-admin-item="${id}"]`);
+      const category = card?.closest(".admin-category-group");
+      if (category) category.open = true;
+      if (card instanceof HTMLDetailsElement) card.open = true;
       card?.scrollIntoView({ behavior: "smooth", block: "center" });
       card?.querySelector("input")?.focus({ preventScroll: true });
     });
@@ -269,6 +274,18 @@ export default function AdminEditor() {
     );
   }
 
+  const query = treatmentSearch.trim().toLocaleLowerCase();
+  const treatmentsByCategory = [...new Set(content.treatments.map((treatment) => treatment.category))]
+    .map((category) => ({
+      category,
+      items: content.treatments.map((item, index) => ({ item, index })).filter(({ item }) => {
+        if (item.category !== category || !query) return item.category === category;
+        return [item.name, item.category, item.description, item.bestFor, ...item.options.flatMap((option) => [option.label, option.price])]
+          .join(" ").toLocaleLowerCase().includes(query);
+      }),
+    }))
+    .filter((group) => group.items.length > 0);
+
   return (
     <div className="admin-workspace">
       <nav className="admin-main-tabs" aria-label="Admin areas">
@@ -338,34 +355,47 @@ export default function AdminEditor() {
 
       <section className="admin-section" hidden={activeSection !== "treatments"}>
         <div className="admin-section-heading">
-          <div><p className="eyebrow">Treatments</p><h2>Services and prices</h2></div>
+          <div><p className="eyebrow">Treatments</p><h2>{content.treatments.length} services and packages</h2></div>
           <button type="button" className="text-link admin-add" onClick={() => addItem("treatments")}>Add treatment +</button>
         </div>
-        {content.treatments.map((treatment, index) => (
-          <fieldset className="admin-card" key={treatment.id} data-admin-item={treatment.id}>
-            <legend>Treatment {index + 1}</legend>
-            <button type="button" className="admin-remove" onClick={() => removeItem("treatments", index)} disabled={content.treatments.length === 1}>Remove</button>
-            <div className="admin-fields">
-              <label>Name<input value={treatment.name} onChange={(event) => updateItem("treatments", index, "name", event.target.value)} required /></label>
-              <label>Category<input value={treatment.category} onChange={(event) => updateItem("treatments", index, "category", event.target.value)} required /></label>
-              <label>Description<input value={treatment.description} onChange={(event) => updateItem("treatments", index, "description", event.target.value)} required /></label>
-              <label>Good for <span className="optional">Separate tags with commas</span><input value={treatment.bestFor || ""} onChange={(event) => updateItem("treatments", index, "bestFor", event.target.value)} placeholder="e.g. Full body, Warm oil" /></label>
-              <label className="admin-checkbox"><input type="checkbox" checked={Boolean(treatment.featured)} onChange={(event) => updateItem("treatments", index, "featured", event.target.checked)} /> Feature on home page</label>
-            </div>
-            <div className="admin-treatment-options">
-              <div className="admin-option-heading"><strong>Options and prices</strong><span>Enter a duration or a service option such as “Full body”.</span></div>
-              {treatment.options.map((option, optionIndex) => (
-                <div className="admin-option-row" key={option.id}>
-                  <label>Option<input value={option.label} onChange={(event) => updateTreatmentOption(index, optionIndex, "label", event.target.value)} placeholder="60 min or Full body" required /></label>
-                  <label>Duration <span className="optional">Optional</span><input value={option.duration || ""} onChange={(event) => updateTreatmentOption(index, optionIndex, "duration", event.target.value)} placeholder="60 min" /></label>
-                  <label>Price<input value={option.price} onChange={(event) => updateTreatmentOption(index, optionIndex, "price", event.target.value)} placeholder="NPR 3,500" required /></label>
-                  <button type="button" className="admin-remove-option" onClick={() => removeTreatmentOption(index, optionIndex)} disabled={treatment.options.length === 1}>Remove</button>
-                </div>
-              ))}
-              <button type="button" className="text-link admin-add" onClick={() => addTreatmentOption(index)}>Add price option +</button>
-            </div>
-          </fieldset>
-        ))}
+        <label className="admin-treatment-search">Search services<input type="search" value={treatmentSearch} onChange={(event) => setTreatmentSearch(event.target.value)} placeholder="Name, category, price, or option" /></label>
+        <div className="admin-treatment-groups">
+          {treatmentsByCategory.map(({ category, items }, groupIndex) => (
+            <details className="admin-category-group" key={category} open={!query && groupIndex === 0}>
+              <summary><span>{category}</span><small>{items.length} {items.length === 1 ? "service" : "services"}</small></summary>
+              <div className="admin-category-items">
+                {items.map(({ item: treatment, index }) => (
+                  <details className="admin-service-editor" key={treatment.id} data-admin-item={treatment.id}>
+                    <summary>
+                      <span><strong>{treatment.name}</strong><small>{treatment.options.length} {treatment.options.length === 1 ? "option" : "options"} · from {treatment.options[0]?.price}</small></span>
+                    </summary>
+                    <button type="button" className="admin-service-remove" onClick={() => removeItem("treatments", index)} disabled={content.treatments.length === 1}>Remove service</button>
+                    <div className="admin-fields">
+                      <label>Name<input value={treatment.name} onChange={(event) => updateItem("treatments", index, "name", event.target.value)} required /></label>
+                      <label>Category<input value={treatment.category} onChange={(event) => updateItem("treatments", index, "category", event.target.value)} required /></label>
+                      <label>Description<input value={treatment.description} onChange={(event) => updateItem("treatments", index, "description", event.target.value)} required /></label>
+                      <label>Good for <span className="optional">Separate tags with commas</span><input value={treatment.bestFor || ""} onChange={(event) => updateItem("treatments", index, "bestFor", event.target.value)} placeholder="e.g. Full body, Warm oil" /></label>
+                      <label className="admin-checkbox"><input type="checkbox" checked={Boolean(treatment.featured)} onChange={(event) => updateItem("treatments", index, "featured", event.target.checked)} /> Feature on home page</label>
+                    </div>
+                    <div className="admin-treatment-options">
+                      <div className="admin-option-heading"><strong>Options and prices</strong><span>Enter a duration or a service option such as “Full body”.</span></div>
+                      {treatment.options.map((option, optionIndex) => (
+                        <div className="admin-option-row" key={option.id}>
+                          <label>Option<input value={option.label} onChange={(event) => updateTreatmentOption(index, optionIndex, "label", event.target.value)} placeholder="60 min or Full body" required /></label>
+                          <label>Duration <span className="optional">Optional</span><input value={option.duration || ""} onChange={(event) => updateTreatmentOption(index, optionIndex, "duration", event.target.value)} placeholder="60 min" /></label>
+                          <label>Price<input value={option.price} onChange={(event) => updateTreatmentOption(index, optionIndex, "price", event.target.value)} placeholder="NPR 3,500" required /></label>
+                          <button type="button" className="admin-remove-option" onClick={() => removeTreatmentOption(index, optionIndex)} disabled={treatment.options.length === 1}>Remove</button>
+                        </div>
+                      ))}
+                      <button type="button" className="text-link admin-add" onClick={() => addTreatmentOption(index)}>Add price option +</button>
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </details>
+          ))}
+          {!treatmentsByCategory.length && <p className="booking-inbox-empty">No services match this search.</p>}
+        </div>
         <button type="button" className="text-link admin-add" onClick={() => addItem("treatments")}>Add another treatment +</button>
       </section>
 
