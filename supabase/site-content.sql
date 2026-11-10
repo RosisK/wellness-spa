@@ -1,4 +1,5 @@
 -- Public content for the Waves Spa website. Visitors can read it; admins can update it.
+-- Run waves-menu-update.sql after setup to load the latest menu, hours, and address.
 
 create table if not exists public.site_content (
   id integer primary key check (id = 1),

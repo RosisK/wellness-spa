@@ -63,11 +63,11 @@ export default async function HomePage() {
             <article className="treatment-row" key={item.id}>
               <span className="row-number">0{index + 1}</span>
               <div>
-                <p className="eyebrow">{item.category} · {item.duration}</p>
+                <p className="eyebrow">{item.category} · {item.options[0]?.duration || item.options[0]?.label}</p>
                 <h3>{item.name}</h3>
                 <p className="muted">{item.description}</p>
               </div>
-              <strong>{item.price}</strong>
+              <strong>From {item.options[0]?.price}</strong>
               <Link
                 href={`/book?treatment=${item.id}`}
                 className="row-arrow"

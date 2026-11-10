@@ -121,3 +121,43 @@
 @media(max-width:480px){.booking-form label.wide-field{grid-column:auto}}
 @media(max-width:800px){.admin-main-tabs button{flex:1}.booking-inbox-toolbar{align-items:flex-start;flex-direction:column}.booking-request-card{padding:18px}}
 @media(max-width:480px){.admin-main-tabs button{padding:10px 8px;font-size:9px}.admin-subnav{margin:0 -4px}.booking-request-fields{grid-template-columns:1fr}.booking-request-fields .wide-field,.booking-whatsapp-option,.booking-form-error{grid-column:auto}.booking-request-card>header{align-items:flex-start;flex-direction:column}.booking-request-card>footer{align-items:flex-start;flex-direction:column}.booking-request-card>footer .button{width:100%}.booking-success{grid-column:1}}
+.booking-faq{display:grid;grid-template-columns:.7fr 1.3fr;gap:10%;margin-top:88px;padding-top:38px;border-top:1px solid var(--line)}
+.booking-faq h2{font:34px/1.1 var(--serif);margin:0}
+.booking-faq-list details{border-bottom:1px solid var(--line)}
+.booking-faq-list details:first-child{border-top:1px solid var(--line)}
+.booking-faq-list summary{position:relative;padding:18px 34px 18px 0;cursor:pointer;list-style:none;font-size:13px;font-weight:500}
+.booking-faq-list summary::-webkit-details-marker{display:none}
+.booking-faq-list summary::after{content:"+";position:absolute;right:4px;top:15px;font-size:20px;color:var(--sage-dark)}
+.booking-faq-list details[open] summary::after{content:"−"}
+.booking-faq-list details p{max-width:570px;margin:0;padding:0 28px 18px 0;color:var(--muted);font-size:13px;line-height:1.8}
+.booking-faq-list details a{text-decoration:underline;text-underline-offset:3px}
+@media(max-width:800px){.booking-faq{grid-template-columns:1fr;gap:25px;margin-top:65px}}
+.treatment-finder{margin:36px 0 12px;padding:26px;background:#d9e0d7}
+.treatment-finder-heading{display:flex;justify-content:space-between;align-items:end;gap:30px}
+.treatment-finder-heading .eyebrow{margin-bottom:9px}
+.treatment-finder-heading h2{font:30px/1.1 var(--serif);margin:0}
+.treatment-finder-heading>p{max-width:390px;margin:0;color:var(--muted);font-size:12px;line-height:1.7}
+.treatment-filter-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:23px}
+.treatment-filter-list button{padding:9px 13px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);font-size:11px;cursor:pointer}
+.treatment-filter-list button:hover,.treatment-filter-list button.active{background:var(--sage-dark);border-color:var(--sage-dark);color:var(--paper)}
+.treatment-result-count{margin:24px 0 0;color:var(--muted);font-size:11px}
+.treatment-tags{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0;padding:0;list-style:none}
+.treatment-tags li{padding:5px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:10px}
+.treatment-empty{padding:24px 0;color:var(--muted);font-size:13px}
+.treatment-price-heading{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--sage-dark)}
+.treatment-option-list{width:100%;margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.treatment-option-list li{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:11px}
+.treatment-option-list strong{font-size:11px;font-weight:600;white-space:nowrap}
+.treatment-option-list a{display:inline-flex;align-items:center;gap:3px;color:var(--sage-dark);font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.treatment-option-list a:hover{text-decoration:underline;text-underline-offset:3px}
+.admin-treatment-options{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.admin-option-heading{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin-bottom:12px}
+.admin-option-heading strong{font:18px var(--serif)}
+.admin-option-heading span{font-size:11px;color:var(--muted)}
+.admin-option-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;align-items:end;gap:12px;margin-bottom:12px}
+.admin-option-row label{display:flex;flex-direction:column;gap:7px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.admin-option-row input{width:100%;min-width:0;padding:10px;border:1px solid var(--line);background:#eee8dc;color:var(--ink);font-size:13px;font-weight:400;letter-spacing:normal;text-transform:none}
+.admin-remove-option{padding:9px 0;border:0;background:none;color:#8c4f42;font-size:10px;text-decoration:underline;cursor:pointer}
+.admin-remove-option:disabled{opacity:.4;cursor:not-allowed}
+@media(max-width:800px){.admin-option-row{grid-template-columns:1fr 1fr}.admin-remove-option{justify-self:start}}
+@media(max-width:800px){.treatment-finder{padding:20px}.treatment-finder-heading{align-items:flex-start;flex-direction:column;gap:13px}.treatment-finder-heading h2{font-size:27px}}

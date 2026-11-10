@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { defaultSiteContent } from "../lib/site-content";
+import { defaultSiteContent, normalizeTreatment } from "../lib/site-content";
 import AdminImageField from "./admin-image-field";
 import BookingInbox from "./booking-inbox";
 
@@ -20,9 +20,16 @@ async function readContent(token) {
   if (!response.ok) throw new Error("Could not load site content. Check the database setup.");
   const [row] = await response.json();
   if (!row?.content) throw new Error("The site content record is missing. Check that the database migration has been applied.");
+  const menuNeedsRefresh = Number(row.content.menuVersion || 0) < defaultSiteContent.menuVersion;
   return {
     ...defaultSiteContent,
     ...row.content,
+    menuVersion: defaultSiteContent.menuVersion,
+    hours: menuNeedsRefresh ? defaultSiteContent.hours : row.content.hours || defaultSiteContent.hours,
+    locations: menuNeedsRefresh ? defaultSiteContent.locations : row.content.locations,
+    treatments: menuNeedsRefresh
+      ? defaultSiteContent.treatments
+      : (Array.isArray(row.content.treatments) ? row.content.treatments : defaultSiteContent.treatments).map(normalizeTreatment),
     images: { ...defaultSiteContent.images, ...(row.content.images || {}) },
   };
 }
@@ -142,11 +149,40 @@ export default function AdminEditor() {
     }));
   }
 
+  function updateTreatmentOption(index, optionIndex, field, value) {
+    setContent((current) => ({
+      ...current,
+      treatments: current.treatments.map((treatment, treatmentIndex) => treatmentIndex !== index ? treatment : ({
+        ...treatment,
+        options: treatment.options.map((option, itemIndex) => itemIndex === optionIndex ? { ...option, [field]: value } : option),
+      })),
+    }));
+  }
+
+  function addTreatmentOption(index) {
+    const option = { id: crypto.randomUUID(), label: "New option", duration: "", price: "" };
+    setContent((current) => ({
+      ...current,
+      treatments: current.treatments.map((treatment, itemIndex) => itemIndex === index
+        ? { ...treatment, options: [...treatment.options, option] }
+        : treatment),
+    }));
+  }
+
+  function removeTreatmentOption(index, optionIndex) {
+    setContent((current) => ({
+      ...current,
+      treatments: current.treatments.map((treatment, itemIndex) => itemIndex === index
+        ? { ...treatment, options: treatment.options.filter((_, currentIndex) => currentIndex !== optionIndex) }
+        : treatment),
+    }));
+  }
+
   function addItem(collection) {
     const id = crypto.randomUUID();
     const item = collection === "locations"
       ? { id, name: "New location", address: "", city: "", region: "", country: "Nepal", mapUrl: "" }
-      : { id, name: "New treatment", category: "Massage", description: "", duration: "60 min", price: "", featured: false };
+      : { id, name: "New treatment", category: "Massage & Body Therapies", description: "", bestFor: "", options: [{ id: crypto.randomUUID(), label: "60 min", duration: "60 min", price: "" }], featured: false };
     setContent((current) => ({ ...current, [collection]: [...current[collection], item] }));
     setError("");
     setNotice(`New ${collection === "locations" ? "location" : "treatment"} added. Complete its details, then save your changes.`);
@@ -170,7 +206,9 @@ export default function AdminEditor() {
       ["name", "address", "city", "region", "country", "mapUrl"].some((field) => !String(location[field] || "").trim()),
     );
     const invalidTreatment = content.treatments.some((treatment) =>
-      ["name", "category", "description", "duration", "price"].some((field) => !String(treatment[field] || "").trim()),
+      ["name", "category", "description"].some((field) => !String(treatment[field] || "").trim())
+      || !Array.isArray(treatment.options) || treatment.options.length === 0
+      || treatment.options.some((option) => !String(option.label || "").trim() || !String(option.price || "").trim()),
     );
     if (!content.phone?.trim() || !content.whatsapp?.trim() || !content.hours?.trim()
       || invalidLocation || invalidTreatment) {
@@ -311,9 +349,20 @@ export default function AdminEditor() {
               <label>Name<input value={treatment.name} onChange={(event) => updateItem("treatments", index, "name", event.target.value)} required /></label>
               <label>Category<input value={treatment.category} onChange={(event) => updateItem("treatments", index, "category", event.target.value)} required /></label>
               <label>Description<input value={treatment.description} onChange={(event) => updateItem("treatments", index, "description", event.target.value)} required /></label>
-              <label>Duration<input value={treatment.duration} onChange={(event) => updateItem("treatments", index, "duration", event.target.value)} required /></label>
-              <label>Price<input value={treatment.price} onChange={(event) => updateItem("treatments", index, "price", event.target.value)} required /></label>
+              <label>Good for <span className="optional">Separate tags with commas</span><input value={treatment.bestFor || ""} onChange={(event) => updateItem("treatments", index, "bestFor", event.target.value)} placeholder="e.g. Full body, Warm oil" /></label>
               <label className="admin-checkbox"><input type="checkbox" checked={Boolean(treatment.featured)} onChange={(event) => updateItem("treatments", index, "featured", event.target.checked)} /> Feature on home page</label>
+            </div>
+            <div className="admin-treatment-options">
+              <div className="admin-option-heading"><strong>Options and prices</strong><span>Enter a duration or a service option such as “Full body”.</span></div>
+              {treatment.options.map((option, optionIndex) => (
+                <div className="admin-option-row" key={option.id}>
+                  <label>Option<input value={option.label} onChange={(event) => updateTreatmentOption(index, optionIndex, "label", event.target.value)} placeholder="60 min or Full body" required /></label>
+                  <label>Duration <span className="optional">Optional</span><input value={option.duration || ""} onChange={(event) => updateTreatmentOption(index, optionIndex, "duration", event.target.value)} placeholder="60 min" /></label>
+                  <label>Price<input value={option.price} onChange={(event) => updateTreatmentOption(index, optionIndex, "price", event.target.value)} placeholder="NPR 3,500" required /></label>
+                  <button type="button" className="admin-remove-option" onClick={() => removeTreatmentOption(index, optionIndex)} disabled={treatment.options.length === 1}>Remove</button>
+                </div>
+              ))}
+              <button type="button" className="text-link admin-add" onClick={() => addTreatmentOption(index)}>Add price option +</button>
             </div>
           </fieldset>
         ))}

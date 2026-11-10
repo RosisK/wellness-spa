@@ -33,7 +33,8 @@ export async function POST(request) {
   const date = cleanText(form.date, 10);
   const time = cleanText(form.time, 5);
   const notes = cleanText(form.notes, 1000);
-  if (name.length < 2 || phone.replace(/\D/g, "").length < 7 || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^(09|1[0-9]):00$/.test(time)) {
+  const treatmentOptionId = cleanText(form.treatmentOptionId, 80);
+  if (name.length < 2 || phone.replace(/\D/g, "").length < 7 || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^(1[0-9]|2[01]):00$/.test(time)) {
     return Response.json({ error: "Check your name, phone number, date, and preferred time." }, { status: 400 });
   }
 
@@ -50,9 +51,10 @@ export async function POST(request) {
 
   const content = await getSiteContent();
   const treatment = content.treatments.find((item) => item.id === form.treatmentId);
+  const treatmentOption = treatment?.options.find((item) => item.id === treatmentOptionId);
   const location = content.locations.find((item) => item.id === form.locationId);
-  if (!treatment || !location) {
-    return Response.json({ error: "Choose a current treatment and location." }, { status: 400 });
+  if (!treatment || !treatmentOption || !location) {
+    return Response.json({ error: "Choose a current treatment, option, and location." }, { status: 400 });
   }
 
   try {
@@ -68,7 +70,7 @@ export async function POST(request) {
         customer_name: name,
         customer_phone: phone,
         treatment_id: treatment.id,
-        treatment_name: treatment.name,
+        treatment_name: `${treatment.name} — ${treatmentOption.label} (${treatmentOption.price})`,
         location_id: location.id,
         location_name: location.name,
         preferred_date: date,

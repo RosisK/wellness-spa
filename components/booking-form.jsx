@@ -8,6 +8,13 @@ import { whatsappHref } from "../lib/site-content";
 export default function BookingForm({ content }) {
   const params = useSearchParams();
   const requestedTreatment = params.get("treatment");
+  const requestedOption = params.get("option");
+  const initialTreatment = content.treatments.find((item) => item.id === requestedTreatment) || content.treatments[0];
+  const [selectedTreatmentId, setSelectedTreatmentId] = useState(initialTreatment.id);
+  const initialOption = initialTreatment.options.find((option) => option.id === requestedOption) || initialTreatment.options[0];
+  const [selectedOptionId, setSelectedOptionId] = useState(initialOption.id);
+  const selectedTreatment = content.treatments.find((item) => item.id === selectedTreatmentId) || content.treatments[0];
+  const selectedOption = selectedTreatment.options.find((option) => option.id === selectedOptionId) || selectedTreatment.options[0];
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [confirmation, setConfirmation] = useState(null);
@@ -21,6 +28,7 @@ export default function BookingForm({ content }) {
     setError("");
     const data = new FormData(event.currentTarget);
     const treatment = content.treatments.find((item) => item.id === data.get("treatmentId"));
+    const option = treatment?.options.find((item) => item.id === data.get("treatmentOptionId"));
     const location = content.locations.find((item) => item.id === data.get("locationId")) || content.locations[0];
     const name = String(data.get("name") || "").trim();
     const phone = String(data.get("phone") || "").trim();
@@ -31,7 +39,7 @@ export default function BookingForm({ content }) {
       "Hello Waves Spa, I’ve submitted an appointment request.",
       `Name: ${name}`,
       `Phone: ${phone}`,
-      `Treatment: ${treatment?.name || ""}`,
+      `Treatment: ${treatment?.name || ""} — ${option?.label || ""} (${option?.price || ""})`,
       `Location: ${location.name} — ${location.address}, ${location.city}`,
       `Preferred date: ${date}`,
       `Preferred time: ${time}`,
@@ -52,6 +60,7 @@ export default function BookingForm({ content }) {
           time,
           notes,
           treatmentId: treatment?.id,
+          treatmentOptionId: option?.id,
           locationId: location.id,
           website: data.get("website"),
         }),
@@ -87,8 +96,17 @@ export default function BookingForm({ content }) {
       <label>Your name<input required name="name" autoComplete="name" maxLength="100" placeholder="Full name" /></label>
       <label>Phone or WhatsApp<input required name="phone" type="tel" autoComplete="tel" minLength="7" maxLength="40" placeholder="+977 …" /></label>
       <label>Treatment
-        <select name="treatmentId" defaultValue={content.treatments.some((item) => item.id === requestedTreatment) ? requestedTreatment : content.treatments[0].id}>
-          {content.treatments.map((item) => <option value={item.id} key={item.id}>{item.name} · {item.price}</option>)}
+        <select name="treatmentId" value={selectedTreatment.id} onChange={(event) => {
+          const nextTreatment = content.treatments.find((item) => item.id === event.target.value);
+          setSelectedTreatmentId(event.target.value);
+          setSelectedOptionId(nextTreatment?.options[0]?.id || "");
+        }}>
+          {content.treatments.map((item) => <option value={item.id} key={item.id}>{item.name} · from {item.options[0]?.price}</option>)}
+        </select>
+      </label>
+      <label>Option and price
+        <select name="treatmentOptionId" value={selectedOption.id} onChange={(event) => setSelectedOptionId(event.target.value)}>
+          {selectedTreatment.options.map((option) => <option value={option.id} key={option.id}>{option.label} · {option.price}</option>)}
         </select>
       </label>
       <label>Location
@@ -99,7 +117,7 @@ export default function BookingForm({ content }) {
       <label>Preferred date<input required name="date" type="date" min={minimumDate} /></label>
       <label>Preferred time
         <select name="time" defaultValue="10:00">
-          {["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"].map((time) => <option key={time}>{time}</option>)}
+          {["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"].map((time) => <option key={time}>{time}</option>)}
         </select>
       </label>
       <label className="wide-field">Anything we should know? <span className="optional">Optional</span>
