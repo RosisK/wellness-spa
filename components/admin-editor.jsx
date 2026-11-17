@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { defaultSiteContent, normalizeTreatment } from "../lib/site-content";
+import { defaultSiteContent, getOptionPrice, normalizeTreatment } from "../lib/site-content";
 import AdminImageField from "./admin-image-field";
 import BookingInbox from "./booking-inbox";
 
@@ -161,7 +161,7 @@ export default function AdminEditor() {
   }
 
   function addTreatmentOption(index) {
-    const option = { id: crypto.randomUUID(), label: "New option", duration: "", price: "" };
+    const option = { id: crypto.randomUUID(), label: "New option", duration: "", price: "", discountPercent: "" };
     setContent((current) => ({
       ...current,
       treatments: current.treatments.map((treatment, itemIndex) => itemIndex === index
@@ -213,7 +213,9 @@ export default function AdminEditor() {
     const invalidTreatment = content.treatments.some((treatment) =>
       ["name", "category", "description"].some((field) => !String(treatment[field] || "").trim())
       || !Array.isArray(treatment.options) || treatment.options.length === 0
-      || treatment.options.some((option) => !String(option.label || "").trim() || !String(option.price || "").trim()),
+      || treatment.options.some((option) => !String(option.label || "").trim() || !String(option.price || "").trim()
+        || (option.discountPercent !== "" && option.discountPercent != null
+          && (!Number.isFinite(Number(option.discountPercent)) || Number(option.discountPercent) < 1 || Number(option.discountPercent) > 99))),
     );
     if (!content.phone?.trim() || !content.whatsapp?.trim() || !content.hours?.trim()
       || invalidLocation || invalidTreatment) {
@@ -367,7 +369,7 @@ export default function AdminEditor() {
                 {items.map(({ item: treatment, index }) => (
                   <details className="admin-service-editor" key={treatment.id} data-admin-item={treatment.id}>
                     <summary>
-                      <span><strong>{treatment.name}</strong><small>{treatment.options.length} {treatment.options.length === 1 ? "option" : "options"} · from {treatment.options[0]?.price}</small></span>
+                      <span><strong>{treatment.name}</strong><small>{treatment.options.length} {treatment.options.length === 1 ? "option" : "options"} · from {getOptionPrice(treatment.options[0]).price}</small></span>
                     </summary>
                     <button type="button" className="admin-service-remove" onClick={() => removeItem("treatments", index)} disabled={content.treatments.length === 1}>Remove service</button>
                     <div className="admin-fields">
@@ -378,12 +380,13 @@ export default function AdminEditor() {
                       <label className="admin-checkbox"><input type="checkbox" checked={Boolean(treatment.featured)} onChange={(event) => updateItem("treatments", index, "featured", event.target.checked)} /> Feature on home page</label>
                     </div>
                     <div className="admin-treatment-options">
-                      <div className="admin-option-heading"><strong>Options and prices</strong><span>Enter a duration or a service option such as “Full body”.</span></div>
+                      <div className="admin-option-heading"><strong>Options and prices</strong><span>Set an optional discount for each option; the reduced price is calculated automatically.</span></div>
                       {treatment.options.map((option, optionIndex) => (
                         <div className="admin-option-row" key={option.id}>
                           <label>Option<input value={option.label} onChange={(event) => updateTreatmentOption(index, optionIndex, "label", event.target.value)} placeholder="60 min or Full body" required /></label>
                           <label>Duration <span className="optional">Optional</span><input value={option.duration || ""} onChange={(event) => updateTreatmentOption(index, optionIndex, "duration", event.target.value)} placeholder="60 min" /></label>
                           <label>Price<input value={option.price} onChange={(event) => updateTreatmentOption(index, optionIndex, "price", event.target.value)} placeholder="NPR 3,500" required /></label>
+                          <label>Discount <span className="optional">Optional, 1–99%</span><input type="number" min="1" max="99" step="1" value={option.discountPercent ?? ""} onChange={(event) => updateTreatmentOption(index, optionIndex, "discountPercent", event.target.value)} placeholder="%" /></label>
                           <button type="button" className="admin-remove-option" onClick={() => removeTreatmentOption(index, optionIndex)} disabled={treatment.options.length === 1}>Remove</button>
                         </div>
                       ))}

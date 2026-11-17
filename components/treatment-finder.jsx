@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { useState } from "react";
+import PriceDisplay from "./price-display";
 
 function getTags(treatment) {
   return String(treatment.bestFor || "")
@@ -52,7 +53,7 @@ export default function TreatmentFinder({ treatments }) {
               </div>
               <div className="treatment-service-action">
                 <span>From</span>
-                <strong>{item.options[0]?.price}</strong>
+                <PriceDisplay option={item.options[0]} />
                 <Link className="button button-dark" href={`/book?treatment=${item.id}&option=${item.options[0]?.id}`}>Request <ArrowUpRight size={14} /></Link>
               </div>
             </div>
@@ -62,7 +63,7 @@ export default function TreatmentFinder({ treatments }) {
                 <ul>
                   {item.options.map((option) => (
                     <li key={option.id}>
-                      <span>{option.label}</span><strong>{option.price}</strong>
+                      <span>{option.label}</span><PriceDisplay option={option} />
                       <Link href={`/book?treatment=${item.id}&option=${option.id}`}>Choose this option <ArrowUpRight size={13} /></Link>
                     </li>
                   ))}

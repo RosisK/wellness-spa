@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight, Clock3, MapPin } from "lucide-react";
 import { getSiteContent } from "../lib/site-content";
 import ShapoReviews from "../components/shapo-reviews";
+import PriceDisplay from "../components/price-display";
 
 export default async function HomePage() {
   const content = await getSiteContent();
@@ -67,7 +68,7 @@ export default async function HomePage() {
                 <h3>{item.name}</h3>
                 <p className="muted">{item.description}</p>
               </div>
-              <strong>From {item.options[0]?.price}</strong>
+              <div className="home-treatment-price"><span>From</span><PriceDisplay option={item.options[0]} /></div>
               <Link
                 href={`/book?treatment=${item.id}`}
                 className="row-arrow"

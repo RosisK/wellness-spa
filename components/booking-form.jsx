@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ArrowUpRight, Check } from "lucide-react";
-import { whatsappHref } from "../lib/site-content";
+import { getOptionPrice, whatsappHref } from "../lib/site-content";
 
 export default function BookingForm({ content }) {
   const params = useSearchParams();
@@ -39,7 +39,7 @@ export default function BookingForm({ content }) {
       "Hello Waves Spa, I’ve submitted an appointment request.",
       `Name: ${name}`,
       `Phone: ${phone}`,
-      `Treatment: ${treatment?.name || ""} — ${option?.label || ""} (${option?.price || ""})`,
+      `Treatment: ${treatment?.name || ""} — ${option?.label || ""} (${option ? getOptionPrice(option).price : ""})`,
       `Location: ${location.name} — ${location.address}, ${location.city}`,
       `Preferred date: ${date}`,
       `Preferred time: ${time}`,
@@ -101,12 +101,15 @@ export default function BookingForm({ content }) {
           setSelectedTreatmentId(event.target.value);
           setSelectedOptionId(nextTreatment?.options[0]?.id || "");
         }}>
-          {content.treatments.map((item) => <option value={item.id} key={item.id}>{item.name} · from {item.options[0]?.price}</option>)}
+          {content.treatments.map((item) => <option value={item.id} key={item.id}>{item.name} · from {getOptionPrice(item.options[0]).price}</option>)}
         </select>
       </label>
       <label>Option and price
         <select name="treatmentOptionId" value={selectedOption.id} onChange={(event) => setSelectedOptionId(event.target.value)}>
-          {selectedTreatment.options.map((option) => <option value={option.id} key={option.id}>{option.label} · {option.price}</option>)}
+          {selectedTreatment.options.map((option) => {
+            const price = getOptionPrice(option);
+            return <option value={option.id} key={option.id}>{option.label} · {price.price}{price.discountPercent ? ` (was ${price.originalPrice})` : ""}</option>;
+          })}
         </select>
       </label>
       <label>Location
