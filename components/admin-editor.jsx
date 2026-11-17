@@ -370,7 +370,7 @@ export default function AdminEditor() {
         <label className="admin-treatment-search">Search services<input type="search" value={treatmentSearch} onChange={(event) => setTreatmentSearch(event.target.value)} placeholder="Name, category, price, or option" /></label>
         <div className="admin-treatment-groups">
           {treatmentsByCategory.map(({ category, items }, groupIndex) => (
-            <details className="admin-category-group" key={category} open={Boolean(query) || (!query && groupIndex === 0)}>
+            <details className="admin-category-group" key={category} name="treatment-categories" open={groupIndex === 0}>
               <summary><span>{category}</span><small>{items.length} {items.length === 1 ? "service" : "services"}</small></summary>
               <div className="admin-category-toolbar">
                 <button type="button" className="text-link admin-add" aria-label={`Add treatment to ${category}`} onClick={() => addItem("treatments", category)}>Add treatment +</button>
