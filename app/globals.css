@@ -202,3 +202,75 @@
 @media(max-width:480px){.admin-category-group>summary{align-items:flex-start;flex-wrap:wrap;font-size:17px}.admin-category-group>summary small{order:3;width:100%;margin:0}.admin-service-editor>summary{padding-right:110px}.admin-service-remove{right:64px;top:15px;font-size:8px}.admin-service-editor>.admin-fields,.admin-service-editor>.admin-treatment-options{margin:13px}}
 @media(max-width:800px){.treatment-finder{padding:20px}.treatment-finder-heading{align-items:flex-start;flex-direction:column;gap:16px}.treatment-search{width:100%}.treatment-service-card{padding:18px}.treatment-service-main{grid-template-columns:1fr;gap:18px}.treatment-service-action{grid-template-columns:auto auto 1fr;align-items:center;gap:9px}.treatment-service-action .button{margin:0;justify-self:end}.treatment-service-main h2{font-size:25px}}
 @media(max-width:480px){.treatment-filter-list{flex-wrap:nowrap;overflow-x:auto;padding-bottom:6px;margin-right:-20px}.treatment-filter-list button{white-space:nowrap}.treatment-service-options li{grid-template-columns:1fr auto;gap:8px}.treatment-service-options li a{grid-column:1/-1;justify-self:start}}
+
+.whatsapp-float-icon{width:48px;height:48px;align-self:center}.whatsapp-float-icon svg{display:block;width:27px;height:27px;margin:auto;transform:translate(-.5px,-.5px)}
+.admin-service-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 18px;padding:10px 0;border-bottom:1px solid var(--line);color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.admin-service-remove{position:static;display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:7px 10px;border:1px solid rgba(140,79,66,.35);border-radius:3px;background:transparent;font-size:10px;letter-spacing:.02em;text-decoration:none}
+.admin-service-editor>.admin-fields{margin:0 18px;padding:17px;border:1px solid var(--line);border-top:0;background:#f0ece3}
+.admin-service-editor>.admin-treatment-options{margin:16px 18px 18px;padding:16px;border:1px solid var(--line);background:#f0ece3}
+.admin-option-row{padding:13px;border:1px solid var(--line);background:var(--paper)}
+.admin-option-heading{padding-bottom:12px;border-bottom:1px solid var(--line)}
+.admin-category-group>summary{font-family:var(--sans);font-size:14px;font-weight:600}
+.admin-category-group>summary>span{line-height:1.4}
+.admin-treatment-help{max-width:620px;margin:-8px 0 0;color:var(--muted);font-size:12px;line-height:1.6}
+.whatsapp-float-icon .whatsapp-bubble{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.whatsapp-float-icon .whatsapp-phone{fill:currentColor;stroke:none}
+body:has(.admin-page) .whatsapp-float{display:none}
+
+@media(max-width:800px){
+  .whatsapp-float{right:16px;bottom:16px;padding:7px 14px 7px 7px;gap:10px}
+  .whatsapp-float-icon{width:42px;height:42px}
+  .whatsapp-float-icon svg{width:24px;height:24px}
+  .whatsapp-float-copy{font-size:12px}
+  .whatsapp-float-copy strong{font-size:11px}
+  .admin-main-tabs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:5px}
+  .admin-main-tabs button{min-width:0;padding:10px 8px;font-size:9px;white-space:nowrap}
+  .admin-main-tabs .admin-sign-out{margin:0;padding-inline:10px}
+  .admin-subnav{padding:12px 0 6px;gap:6px}
+  .admin-subnav button{min-height:42px;padding:10px 12px}
+  .admin-section{padding:26px 0}
+  .admin-section-heading{gap:14px}
+  .admin-section-heading>.text-link{min-height:42px;align-self:stretch;justify-content:center;padding:10px 12px;border:1px solid var(--line);background:#e9ece5}
+  .admin-category-group>summary{min-height:56px;padding:14px}
+  .admin-category-items{padding:0 9px 9px}
+  .admin-service-editor>summary{min-height:62px;padding:13px 92px 13px 13px}
+  .admin-service-editor>summary::after{right:12px}
+  .admin-service-toolbar{margin:0 13px}
+  .admin-service-editor>.admin-fields{margin:0 13px;padding:13px}
+  .admin-service-editor>.admin-treatment-options{margin:13px;padding:13px}
+  .admin-save-bar{z-index:5;bottom:0;padding:10px 0 calc(10px + env(safe-area-inset-bottom));background:rgba(232,224,210,.96);backdrop-filter:blur(10px)}
+  .admin-save-bar .button{width:100%;min-height:46px}
+  .booking-inbox-toolbar h2{font-size:29px}
+}
+
+@media(max-width:560px){
+  .whatsapp-float{right:12px;bottom:12px;padding:6px 12px 6px 6px;gap:8px}
+  .whatsapp-float-icon{width:38px;height:38px}
+  .whatsapp-float-icon svg{width:22px;height:22px}
+  .whatsapp-float-copy{font-size:11px}
+  .whatsapp-float-copy strong{font-size:10px}
+  .admin-main-tabs{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .admin-main-tabs .admin-sign-out{grid-column:2;justify-self:end;min-height:36px;padding:5px 9px}
+  .admin-section-heading h2{font-size:26px}
+  .admin-fields{grid-template-columns:minmax(0,1fr);gap:14px}
+  .admin-fields .wide-field{grid-column:auto}
+  .admin-image-grid{grid-template-columns:minmax(0,1fr)}
+  .admin-option-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:11px;padding:11px}
+  .admin-option-row label{min-width:0;font-size:9px;letter-spacing:.06em}
+  .admin-option-row input{min-height:42px;padding:9px}
+  .admin-option-row .admin-remove-option{grid-column:1/-1;justify-self:stretch;min-height:40px;border:1px solid var(--line);text-align:center;text-decoration:none}
+  .admin-service-toolbar{align-items:flex-start}
+  .admin-service-remove{min-height:38px;padding:6px 8px}
+  .admin-service-editor>.admin-fields,.admin-service-editor>.admin-treatment-options{margin-right:10px;margin-left:10px}
+  .admin-category-group>summary{font-size:13px}
+  .booking-request-card>footer .button,.submit-button,.admin-login button{min-height:46px}
+  .booking-form input,.booking-form select,.booking-form textarea,.admin-login input,.admin-fields input,.admin-treatment-search input{font-size:16px}
+  .button,.menu-toggle,.mobile-nav a,.booking-filters button,.treatment-filter-list button{min-height:44px}
+  .treatment-service-action{grid-template-columns:auto 1fr;align-items:start}
+  .treatment-service-action .button{grid-column:1/-1;justify-self:start}
+  .treatment-service-options li{grid-template-columns:minmax(0,1fr) auto;gap:8px}
+  .treatment-service-options li .price-display{justify-self:end;text-align:right}
+  .footer{padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+}
+
+@media(prefers-reduced-motion:reduce){.whatsapp-float{transition:none}html{scroll-behavior:auto}}

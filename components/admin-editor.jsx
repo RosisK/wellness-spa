@@ -282,7 +282,7 @@ export default function AdminEditor() {
       category,
       items: content.treatments.map((item, index) => ({ item, index })).filter(({ item }) => {
         if (item.category !== category || !query) return item.category === category;
-        return [item.name, item.category, item.description, item.bestFor, ...item.options.flatMap((option) => [option.label, option.price])]
+        return [item.name, item.category, item.description, item.bestFor, ...item.options.flatMap((option) => [option.label, option.price, option.discountPercent])]
           .join(" ").toLocaleLowerCase().includes(query);
       }),
     }))
@@ -360,10 +360,11 @@ export default function AdminEditor() {
           <div><p className="eyebrow">Treatments</p><h2>{content.treatments.length} services and packages</h2></div>
           <button type="button" className="text-link admin-add" onClick={() => addItem("treatments")}>Add treatment +</button>
         </div>
+        <p className="admin-treatment-help">Choose a category to browse, or search for a service. Open any service to edit its details and prices.</p>
         <label className="admin-treatment-search">Search services<input type="search" value={treatmentSearch} onChange={(event) => setTreatmentSearch(event.target.value)} placeholder="Name, category, price, or option" /></label>
         <div className="admin-treatment-groups">
           {treatmentsByCategory.map(({ category, items }, groupIndex) => (
-            <details className="admin-category-group" key={category} open={!query && groupIndex === 0}>
+            <details className="admin-category-group" key={category} open={Boolean(query) || (!query && groupIndex === 0)}>
               <summary><span>{category}</span><small>{items.length} {items.length === 1 ? "service" : "services"}</small></summary>
               <div className="admin-category-items">
                 {items.map(({ item: treatment, index }) => (
@@ -371,7 +372,10 @@ export default function AdminEditor() {
                     <summary>
                       <span><strong>{treatment.name}</strong><small>{treatment.options.length} {treatment.options.length === 1 ? "option" : "options"} · from {getOptionPrice(treatment.options[0]).price}</small></span>
                     </summary>
-                    <button type="button" className="admin-service-remove" onClick={() => removeItem("treatments", index)} disabled={content.treatments.length === 1}>Remove service</button>
+                    <div className="admin-service-toolbar">
+                      <span>Service details</span>
+                      <button type="button" className="admin-service-remove" onClick={() => removeItem("treatments", index)} disabled={content.treatments.length === 1}>Remove service</button>
+                    </div>
                     <div className="admin-fields">
                       <label>Name<input value={treatment.name} onChange={(event) => updateItem("treatments", index, "name", event.target.value)} required /></label>
                       <label>Category<input value={treatment.category} onChange={(event) => updateItem("treatments", index, "category", event.target.value)} required /></label>
