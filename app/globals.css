@@ -212,6 +212,8 @@
 .admin-option-heading{padding-bottom:12px;border-bottom:1px solid var(--line)}
 .admin-category-group>summary{font-family:var(--sans);font-size:14px;font-weight:600}
 .admin-category-group>summary>span{line-height:1.4}
+.admin-category-toolbar{display:flex;justify-content:flex-end;padding:0 12px 10px}
+.admin-category-toolbar .admin-add{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:7px 11px;border:1px solid var(--line);background:var(--paper);font-size:10px}
 .admin-treatment-help{max-width:620px;margin:-8px 0 0;color:var(--muted);font-size:12px;line-height:1.6}
 .whatsapp-float-icon .whatsapp-bubble{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .whatsapp-float-icon .whatsapp-phone{fill:currentColor;stroke:none}

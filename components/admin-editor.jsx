@@ -179,11 +179,17 @@ export default function AdminEditor() {
     }));
   }
 
-  function addItem(collection) {
+  function addItem(collection, treatmentCategory) {
     const id = crypto.randomUUID();
+    let categoryName = treatmentCategory || "Massage & Body Therapies";
+    if (collection === "treatments" && categoryName === "New category") {
+      let suffix = 1;
+      while (content.treatments.some((treatment) => treatment.category === (suffix === 1 ? categoryName : `${categoryName} ${suffix}`))) suffix += 1;
+      if (suffix > 1) categoryName = `${categoryName} ${suffix}`;
+    }
     const item = collection === "locations"
       ? { id, name: "New location", address: "", city: "", region: "", country: "Nepal", mapUrl: "" }
-      : { id, name: "New treatment", category: "Massage & Body Therapies", description: "", bestFor: "", options: [{ id: crypto.randomUUID(), label: "60 min", duration: "60 min", price: "" }], featured: false };
+      : { id, name: "New treatment", category: categoryName, description: "", bestFor: "", options: [{ id: crypto.randomUUID(), label: "60 min", duration: "60 min", price: "", discountPercent: "" }], featured: false };
     setContent((current) => ({ ...current, [collection]: [...current[collection], item] }));
     if (collection === "treatments") setTreatmentSearch("");
     setError("");
@@ -358,14 +364,17 @@ export default function AdminEditor() {
       <section className="admin-section" hidden={activeSection !== "treatments"}>
         <div className="admin-section-heading">
           <div><p className="eyebrow">Treatments</p><h2>{content.treatments.length} services and packages</h2></div>
-          <button type="button" className="text-link admin-add" onClick={() => addItem("treatments")}>Add treatment +</button>
+          <button type="button" className="text-link admin-add" onClick={() => addItem("treatments", "New category")}>Add category +</button>
         </div>
-        <p className="admin-treatment-help">Choose a category to browse, or search for a service. Open any service to edit its details and prices.</p>
+        <p className="admin-treatment-help">Choose a category to browse, or search for a service. Open a service to edit it; use Add treatment inside a category to add to that group. Add category starts a new group with a treatment you can edit.</p>
         <label className="admin-treatment-search">Search services<input type="search" value={treatmentSearch} onChange={(event) => setTreatmentSearch(event.target.value)} placeholder="Name, category, price, or option" /></label>
         <div className="admin-treatment-groups">
           {treatmentsByCategory.map(({ category, items }, groupIndex) => (
             <details className="admin-category-group" key={category} open={Boolean(query) || (!query && groupIndex === 0)}>
               <summary><span>{category}</span><small>{items.length} {items.length === 1 ? "service" : "services"}</small></summary>
+              <div className="admin-category-toolbar">
+                <button type="button" className="text-link admin-add" aria-label={`Add treatment to ${category}`} onClick={() => addItem("treatments", category)}>Add treatment +</button>
+              </div>
               <div className="admin-category-items">
                 {items.map(({ item: treatment, index }) => (
                   <details className="admin-service-editor" key={treatment.id} data-admin-item={treatment.id}>
@@ -403,7 +412,6 @@ export default function AdminEditor() {
           ))}
           {!treatmentsByCategory.length && <p className="booking-inbox-empty">No services match this search.</p>}
         </div>
-        <button type="button" className="text-link admin-add" onClick={() => addItem("treatments")}>Add another treatment +</button>
       </section>
 
       {error && <p className="admin-error" role="alert">{error}</p>}
